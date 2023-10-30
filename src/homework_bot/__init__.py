@@ -1,5 +1,7 @@
 import logging
-import homework_bot
+
+from .bot import *
+from .utils import *
 
 logger = logging.getLogger(__name__)
 
