@@ -26,6 +26,7 @@ main_bot = MainBot(
 
 @main_bot.slash_command()
 async def ping(ctx: ApplicationContext):
+    # TODO: change the respond in future
     await ctx.respond(f"Pong! {main_bot.latency * 1000:.2f}ms")
 
 
@@ -57,7 +58,8 @@ async def set_classroom(ctx: ApplicationContext, secret: str):
             {"server_id": ctx.guild.id, "secret": secret},
         )
 
-    await ctx.respond("Classroom set!")
+    # TODO: change the respond in future
+    await ctx.respond("Classroom set!", ephemeral=True)
 
 
 @discord.guild_only()
@@ -104,7 +106,8 @@ async def set_password(ctx: ApplicationContext, password: str):
             },
         )
 
-    await ctx.respond("Password set!")
+    # TODO: change the respond in future
+    await ctx.respond("Password set!", ephemeral=True)
 
 
 homework = main_bot.create_group("homework", "Commands for homework")
@@ -122,6 +125,7 @@ async def add(
     assigned: Optional[str],
 ):
     if not utils.check_valid_date(assigned) or not utils.check_valid_date(due):
+        # TODO: change the respond in future
         await ctx.respond("Invalid assigned or due date!")
         return
 
@@ -131,6 +135,7 @@ async def add(
     )
 
     if db_classroom_query is None:
+        # TODO: change the respond in future
         await ctx.respond("You haven't set your classroom yet!")
         return
 
@@ -146,6 +151,7 @@ async def add(
     )
 
     if db_password_query is None:
+        # TODO: change the respond in future
         await ctx.respond("You haven't set your password yet!")
         return
 
@@ -167,10 +173,12 @@ async def add(
 
     json_response = api_response.json()
 
-    if json_response["response"]["error"]:
-        await ctx.respond(json_response["response"]["error"])
+    if json_response["response"]["error"] == "NO_TEACHER":
+        # TODO: change the respond in future
+        await ctx.respond("You need to specify `teacher` for this homework")
         return
 
+    # TODO: change the respond in future
     await ctx.respond(
         f"Homework added! ID: {json_response['response']['context']['homework_id']}"
     )
