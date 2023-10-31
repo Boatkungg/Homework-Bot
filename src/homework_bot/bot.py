@@ -1,8 +1,10 @@
-import httpx
-import discord
-import databases
+import logging
 
-from homework_bot import logger
+import databases
+import discord
+import httpx
+
+logger = logging.getLogger(__name__)
 
 
 class MainBot(discord.Bot):
