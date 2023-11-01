@@ -31,16 +31,13 @@ class HWListUI(ui.View):
         self.page = 1
         self.max_page = None
 
-    async def send(self, ctx: ApplicationContext):
-        self.message = await ctx.send(view=self)
-
-    async def get_homeworks(self, page: int):
+    async def get_homeworks(self, guild_id: int, page: int):
         db_query = await self.bot.db.fetch(
             """
             SELECT * FROM servers
             WHERE ServerID = :server_id
             """,
-            {"server_id": self.message.guild.id},
+            {"server_id": guild_id},
         )
 
         if db_query is None:
@@ -70,13 +67,13 @@ class HWListUI(ui.View):
 
         return json_response["response"]["context"]["homeworks"]
 
-    async def get_max_page(self):
+    async def get_max_page(self, guild_id: int):
         db_query = await self.bot.db.fetch(
             """
             SELECT * FROM servers
             WHERE ServerID = :server_id
             """,
-            {"server_id": self.message.guild.id},
+            {"server_id": guild_id},
         )
 
         if db_query is None:
@@ -125,9 +122,12 @@ class HWListUI(ui.View):
             )
 
         return embed
+    
+    async def send(self, ctx: ApplicationContext):
+        self.message = await ctx.send(view=self)
 
     def update_embed(self):
-        pass
+        await self.message.edit(embed=)
 
     # TODO: change the respond in future
     @ui.button(label="Previous", style=discord.ButtonStyle.primary, emoji="⬅️")
