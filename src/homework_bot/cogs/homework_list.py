@@ -126,8 +126,8 @@ class HWListUI(ui.View):
     async def send(self, ctx: ApplicationContext):
         self.message = await ctx.send(view=self)
 
-    def update_embed(self):
-        await self.message.edit(embed=)
+    async def update_embed(self):
+        await self.message.edit()
 
     # TODO: change the respond in future
     @ui.button(label="Previous", style=discord.ButtonStyle.primary, emoji="⬅️")

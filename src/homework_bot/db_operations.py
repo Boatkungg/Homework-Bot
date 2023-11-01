@@ -25,7 +25,7 @@ async def update_classroom(db, guild_id, secret):
         SET ClassroomSecret = :secret
         WHERE ServerID = :server_id
         """,
-        {"server_id": ctx.guild.id, "secret": secret},
+        {"server_id": guild_id, "secret": secret},
     )
 
 async def get_user_password(db, guild_id, user_id):
