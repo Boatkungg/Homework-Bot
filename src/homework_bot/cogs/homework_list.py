@@ -1,9 +1,11 @@
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
 import discord
 from discord import ApplicationContext, Embed, Interaction, ui
 from discord.ext import commands
+
+from homework_bot import api_operations, db_operations
 
 
 @dataclass
@@ -15,129 +17,167 @@ class HWListCriteria:
 
 
 class HWListUI(ui.View):
-    def __init__(
-        self,
-        bot,
-        api_url,
-        filter_criteria: HWListCriteria,
-        *args,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
+    def __init__(self, bot, api_url, classroom_secret, criteria: HWListCriteria):
+        super().__init__(timeout=60)
+        self.page = 1
+        self.max_page = 0
+
         self.bot = bot
         self.api_url = api_url
-        self.filter_criteria = filter_criteria
 
-        self.page = 1
-        self.max_page = None
+        self.classroom_secret = classroom_secret
+        self.criteria = criteria
 
-    async def get_homeworks(self, guild_id: int, page: int):
-        db_query = await self.bot.db.fetch(
-            """
-            SELECT * FROM servers
-            WHERE ServerID = :server_id
-            """,
-            {"server_id": guild_id},
+    async def on_timeout(self):
+        self.disable_all_items()
+        await self.message.edit_original_response(view=self)
+
+    async def get_homeworks(self):
+        criteria = api_operations.getHomeworksCriteria(
+            count=6,
+            page=self.page,
+            assigned_before_date=self.criteria.assigned_before,
+            assigned_after_date=self.criteria.assigned_after,
+            due_before_date=self.criteria.due_before,
+            due_after_date=self.criteria.due_after,
         )
 
-        if db_query is None:
-            return None
-
-        classroom_secret = db_query["ClassroomSecret"]
-
-        query_params = {
-            "secret": classroom_secret,
-            "count": 10,
-            "page": page,
-        }
-
-        for key, value in self.filter_criteria.__dict__.items():
-            if value is not None:
-                query_params[key] = value
-
-        api_response = await self.bot.http_client.get(
-            self.api_url + "/api/get_homeworks",
-            json=query_params,
+        json_response, _ = await api_operations.get_homeworks(
+            self.bot.http_client,
+            self.api_url,
+            self.classroom_secret,
+            criteria,
         )
 
-        json_response = api_response.json()
+        json_response_formatted = [
+            {
+                "homework_id": homework["homework_id"],
+                "subject": homework["subject"],
+                "assigned_date": homework["assigned_date"],
+                "due_date": homework["due_date"],
+            }
+            for homework in json_response["response"]["context"]["homeworks"]
+        ]
 
-        if json_response["response"]["error"] is not None:
-            return None
+        return json_response_formatted, json_response["response"]["context"]["max_page"]
 
-        return json_response["response"]["context"]["homeworks"]
+    async def create_embed(self):
+        homeworks, self.max_page = await self.get_homeworks()
 
-    async def get_max_page(self, guild_id: int):
-        db_query = await self.bot.db.fetch(
-            """
-            SELECT * FROM servers
-            WHERE ServerID = :server_id
-            """,
-            {"server_id": guild_id},
-        )
+        if self.max_page == 0:
+            embed = Embed(title="Homework", timestamp=discord.utils.utcnow())
+            embed.set_footer(text="Homework not found")
+            return embed
 
-        if db_query is None:
-            return None
+        embed = Embed(title="Homework", timestamp=discord.utils.utcnow())
+        embed.set_footer(text=f"Page {self.page}/{self.max_page}")
 
-        classroom_secret = db_query["ClassroomSecret"]
+        # 1 • A31101
+        # assigned 12/03/1212 • due 14/03/1212
+        # ---
+        # 2 • B31102
+        # assigned 12/03/1212 • due 14/03/1212
 
-        query_params = {
-            "secret": classroom_secret,
-            "count": 10,
-        }
-
-        for key, value in self.filter_criteria.__dict__.items():
-            if value is not None:
-                query_params[key] = value
-
-        api_response = await self.bot.http_client.get(
-            self.api_url + "/api/get_page_count",
-            json=query_params,
-        )
-
-        json_response = api_response.json()
-
-        if json_response["response"]["error"] is not None:
-            return None
-
-        return json_response["response"]["context"]["pages"]
-
-    async def create_embed(self, page: int):
-        if self.max_page is None:  # TODO: might be a problem
-            self.max_page = await self.get_max_page()
-
-        homeworks = await self.get_homeworks(page)
-
-        if homeworks is None:
-            return None
-
-        embed = Embed("Homework List")  # pylint: disable=too-many-function-args
-        embed.set_footer(text=f"Page {page}/{self.max_page}")
-
+        description = "```\n"
         for homework in homeworks:
-            embed.add_field(
-                name=f"{homework['subject']} - {homework['title']} ID: {homework['homework_id']}",
-                value=f"Assigned at: {homework['assigned_at']}\nDue at: {homework['due_at']}",
-                inline=False,
+            description += f"{homework['homework_id']} • {homework['subject']}\n"
+            description += (
+                f"assigned {homework['assigned_date']} • due {homework['due_date']}\n"
             )
+            description += "---\n"
+
+        description += "```"
+
+        embed.description = description
 
         return embed
-    
-    async def send(self, ctx: ApplicationContext):
-        self.message = await ctx.send(view=self)
 
-    async def update_embed(self):
-        await self.message.edit()
+    async def update_page(self):
+        embed = await self.create_embed()
+        self.update_button()
 
-    # TODO: change the respond in future
-    @ui.button(label="Previous", style=discord.ButtonStyle.primary, emoji="⬅️")
-    async def previous(self, interaction: Interaction, button: ui.Button):
-        pass
+        await self.message.edit_original_response(embed=embed, view=self)
 
-    # TODO: change the respond in future
-    @ui.button(label="Next", style=discord.ButtonStyle.primary, emoji="➡️")
-    async def next(self, interaction: Interaction, button: ui.Button):
-        pass
+    def update_button(self):
+        frst, prev, nxt, last = None, None, None, None
+        for child in self.children:
+            if isinstance(child, ui.Button) and child.label == "First":
+                frst = child
+
+            elif isinstance(child, ui.Button) and child.label == "Previous":
+                prev = child
+
+            elif isinstance(child, ui.Button) and child.label == "Next":
+                nxt = child
+
+            elif isinstance(child, ui.Button) and child.label == "Last":
+                last = child
+
+            if frst and prev and nxt and last:
+                break
+
+        if self.max_page == 0:
+            self.disable_all_items()
+
+        elif self.page <= 1:
+            frst.disabled = True
+            prev.disabled = True
+            nxt.disabled = False
+            last.disabled = False
+
+        elif self.page >= self.max_page:
+            frst.disabled = False
+            prev.disabled = False
+            nxt.disabled = True
+            last.disabled = True
+
+        else:
+            frst.disabled = False
+            prev.disabled = False
+            nxt.disabled = False
+            last.disabled = False
+
+    async def send_initial_message(self, ctx: ApplicationContext):
+        embed = await self.create_embed()
+        self.update_button()
+
+        self.message = await ctx.respond(embed=embed, view=self)
+
+    @ui.button(label="First", style=discord.ButtonStyle.blurple, emoji="⏮️")
+    async def first(
+        self, button: ui.Button, interaction: Interaction
+    ):  # pylint: disable=unused-argument
+        await interaction.response.defer()
+        self.page = 1
+
+        await self.update_page()
+
+    @ui.button(label="Previous", style=discord.ButtonStyle.blurple, emoji="⬅️")
+    async def previous(
+        self, button: ui.Button, interaction: Interaction
+    ):  # pylint: disable=unused-argument
+        await interaction.response.defer()
+        self.page -= 1
+
+        await self.update_page()
+
+    @ui.button(label="Next", style=discord.ButtonStyle.blurple, emoji="➡️")
+    async def next(
+        self, button: ui.Button, interaction: Interaction
+    ):  # pylint: disable=unused-argument
+        await interaction.response.defer()
+        self.page += 1
+
+        await self.update_page()
+
+    @ui.button(label="Last", style=discord.ButtonStyle.blurple, emoji="⏭️")
+    async def last(
+        self, button: ui.Button, interaction: Interaction
+    ):  # pylint: disable=unused-argument
+        await interaction.response.defer()
+        self.page = self.max_page
+
+        await self.update_page()
 
 
 class HWList(commands.Cog):
@@ -150,11 +190,37 @@ class HWList(commands.Cog):
     async def list(
         self,
         ctx: ApplicationContext,
-        assigned_at: Optional[str],
-        due_at: Optional[str],
-        assigned_before: Optional[str],
-        assigned_after: Optional[str],
-        due_before: Optional[str],
-        due_after: Optional[str],
+        assigned_at: Optional[str] = None,
+        due_at: Optional[str] = None,
+        assigned_before: Optional[str] = None,
+        assigned_after: Optional[str] = None,
+        due_before: Optional[str] = None,
+        due_after: Optional[str] = None,
     ):
-        pass
+        db_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild_id)
+
+        # TODO: change this in future
+        if db_query["ClassroomSecret"] is None:
+            await ctx.respond("Classroom not set!")
+            return
+
+        criteria = HWListCriteria()
+        if assigned_at is not None:
+            criteria.assigned_before = assigned_at
+            criteria.assigned_after = assigned_at
+
+        elif due_at is not None:
+            criteria.due_before = due_at
+            criteria.due_after = due_at
+
+        else:
+            criteria.assigned_before = assigned_before
+            criteria.assigned_after = assigned_after
+            criteria.due_before = due_before
+            criteria.due_after = due_after
+
+        list_ui = HWListUI(
+            self.bot, self.api_url, db_query["ClassroomSecret"], criteria
+        )
+
+        await list_ui.send_initial_message(ctx)

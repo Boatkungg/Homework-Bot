@@ -6,8 +6,8 @@ from cryptography.fernet import Fernet
 from discord import ApplicationContext
 from dotenv import load_dotenv
 
-from homework_bot.cogs import GuildConfig
 from homework_bot.bot import MainBot
+from homework_bot.cogs import GuildConfig, HWList, HWManagement
 
 load_dotenv()
 
@@ -28,7 +28,8 @@ async def ping(ctx: ApplicationContext):
     # TODO: change the respond in future
     await ctx.respond(f"Pong! {main_bot.latency * 1000:.2f}ms")
 
-# main_bot.add_cog(HWManagement(main_bot, key, API_URL))
+main_bot.add_cog(HWManagement(main_bot, key, API_URL))
 main_bot.add_cog(GuildConfig(main_bot, key))
+main_bot.add_cog(HWList(main_bot, API_URL))
 
 main_bot.run(os.getenv("TOKEN"))

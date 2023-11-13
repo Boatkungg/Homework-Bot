@@ -5,11 +5,11 @@ from typing import Optional, Union
 @dataclass
 class addHomeworkCriteria:
     subject: str
-    teacher: Union[str, None] = None
     title: str
+    due_date: str
+    teacher: Union[str, None] = None
     description: Optional[str] = None
     assigned_date: Optional[str] = None
-    due_date: str
 
 
 @dataclass
@@ -73,13 +73,13 @@ async def get_homeworks(
     http_client, api_url, classroom_secret, criteria: getHomeworksCriteria
 ):
     json_query = {
-        "secret": classroom_secret,
+        "classroom_secret": classroom_secret,
         "count": criteria.count,
         "page": criteria.page,
-        "assigned_before": criteria.assigned_before_date,
-        "assigned_after": criteria.assigned_after_date,
-        "due_before": criteria.due_before_date,
-        "due_after": criteria.due_after_date,
+        "assigned_before_date": criteria.assigned_before_date,
+        "assigned_after_date": criteria.assigned_after_date,
+        "due_before_date": criteria.due_before_date,
+        "due_after_date": criteria.due_after_date,
     }
 
     api_response = await http_client.post(

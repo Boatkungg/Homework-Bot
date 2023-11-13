@@ -1,5 +1,5 @@
-from typing import Union
 from datetime import datetime
+from typing import Union
 
 
 def check_valid_date(date: Union[str, None]):

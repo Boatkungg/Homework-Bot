@@ -47,6 +47,8 @@ class MainBot(discord.Bot):
         logger.info("-" * 20)
 
     async def close(self):
+        logger.info("Closing...")
+        
         await self.http_client.aclose()
         await self.db.disconnect()
         await super().close()
