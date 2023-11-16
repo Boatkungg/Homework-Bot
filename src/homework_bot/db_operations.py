@@ -9,6 +9,7 @@ async def get_classroom_secret(db, guild_id):
 
     return db_query
 
+
 async def add_classroom(db, guild_id, secret):
     await db.execute(
         """
@@ -17,6 +18,7 @@ async def add_classroom(db, guild_id, secret):
         """,
         {"server_id": guild_id, "secret": secret},
     )
+
 
 async def update_classroom(db, guild_id, secret):
     await db.execute(
@@ -27,6 +29,7 @@ async def update_classroom(db, guild_id, secret):
         """,
         {"server_id": guild_id, "secret": secret},
     )
+
 
 async def get_user_password(db, guild_id, user_id):
     db_query = await db.fetch_one(
@@ -40,6 +43,7 @@ async def get_user_password(db, guild_id, user_id):
 
     return db_query
 
+
 async def add_user(db, guild_id, user_id, password):
     await db.execute(
         """
@@ -52,6 +56,7 @@ async def add_user(db, guild_id, user_id, password):
             "password": password,
         },
     )
+
 
 async def update_user(db, guild_id, user_id, password):
     await db.execute(

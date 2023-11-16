@@ -17,7 +17,7 @@ class MainBot(discord.Bot):
     async def on_ready(self):
         logger.info(f"Logged in as {self.user}")
         logger.info(f"ID:   {self.user.id}")
-        logger.info(f"Ping: {float(self.latency * 1000):.2}ms")
+        logger.info(f"Ping: {self.latency * 1000:.2}ms")
 
         logger.info("-" * 20)
         logger.info("Setting up...")
@@ -48,7 +48,7 @@ class MainBot(discord.Bot):
 
     async def close(self):
         logger.info("Closing...")
-        
+
         await self.http_client.aclose()
         await self.db.disconnect()
         await super().close()

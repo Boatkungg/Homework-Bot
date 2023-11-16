@@ -13,6 +13,7 @@ class GuildConfig(commands.Cog):
     @commands.guild_only()
     @commands.slash_command()
     async def set_classroom(self, ctx: ApplicationContext, secret: str):
+        await ctx.defer()
         # check if the server is not already registered
         db_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild.id)
 
@@ -29,6 +30,7 @@ class GuildConfig(commands.Cog):
     @commands.guild_only()
     @commands.slash_command()
     async def set_password(self, ctx: ApplicationContext, password: str):
+        await ctx.defer()
         # check if the user is not already registered
         db_query = await db_operations.get_user_password(
             self.bot.db, ctx.guild.id, ctx.author.id

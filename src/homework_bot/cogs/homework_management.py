@@ -28,12 +28,15 @@ class HWManagement(commands.Cog):
         description: Optional[str],
         assigned: Optional[str],
     ):
+        await ctx.defer()
         if not utils.check_valid_date(assigned) or not utils.check_valid_date(due):
             # TODO: change the respond in future
             await ctx.respond("Invalid assigned or due date!", ephemeral=True)
             return
 
-        db_classroom_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild.id)
+        db_classroom_query = await db_operations.get_classroom_secret(
+            self.bot.db, ctx.guild.id
+        )
 
         if db_classroom_query is None:
             # TODO: change the respond in future
@@ -87,15 +90,11 @@ class HWManagement(commands.Cog):
 
     @commands.guild_only()
     @homework.command()
-    async def remove(self, ctx: ApplicationContext, homework_id: str):
-        try:
-            homework_id = int(homework_id)
-        except ValueError:
-            # TODO: change the respond in future
-            await ctx.respond("Invalid homework ID!")
-            return
-
-        db_classroom_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild.id)
+    async def remove(self, ctx: ApplicationContext, homework_id: int):
+        await ctx.defer()
+        db_classroom_query = await db_operations.get_classroom_secret(
+            self.bot.db, ctx.guild.id
+        )
 
         if db_classroom_query is None:
             # TODO: change the respond in future

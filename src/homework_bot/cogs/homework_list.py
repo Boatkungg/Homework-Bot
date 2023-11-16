@@ -80,7 +80,7 @@ class HWListUI(ui.View):
 
         description = "```\n"
         for homework in homeworks:
-            description += f"{homework['homework_id']} • {homework['subject']}\n"
+            description += f"#{homework['homework_id']} • {homework['subject']}\n"
             description += (
                 f"assigned {homework['assigned_date']} • due {homework['due_date']}\n"
             )
@@ -197,6 +197,7 @@ class HWList(commands.Cog):
         due_before: Optional[str] = None,
         due_after: Optional[str] = None,
     ):
+        await ctx.defer()
         db_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild_id)
 
         # TODO: change this in future
