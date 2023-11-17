@@ -69,7 +69,7 @@ async def remove_homework(
     return json_response, json_response["response"]["error"]
 
 
-async def get_homeworks(
+async def list_homeworks(
     http_client, api_url, classroom_secret, criteria: getHomeworksCriteria
 ):
     json_query = {

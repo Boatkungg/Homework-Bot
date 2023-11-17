@@ -42,7 +42,7 @@ class HWListUI(ui.View):
             due_after_date=self.criteria.due_after,
         )
 
-        json_response, _ = await api_operations.get_homeworks(
+        json_response, _ = await api_operations.list_homeworks(
             self.bot.http_client,
             self.api_url,
             self.classroom_secret,
