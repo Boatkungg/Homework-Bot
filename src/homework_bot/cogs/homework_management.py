@@ -34,7 +34,7 @@ class HWManagement(commands.Cog):
             await ctx.respond("Invalid assigned or due date!", ephemeral=True)
             return
 
-        db_classroom_query = await db_operations.get_classroom_secret(
+        db_classroom_query = await db_operations.get_classroom(
             self.bot.db, ctx.guild.id
         )
 
@@ -92,7 +92,7 @@ class HWManagement(commands.Cog):
     @homework.command()
     async def remove(self, ctx: ApplicationContext, homework_id: int):
         await ctx.defer()
-        db_classroom_query = await db_operations.get_classroom_secret(
+        db_classroom_query = await db_operations.get_classroom(
             self.bot.db, ctx.guild.id
         )
 

@@ -198,7 +198,7 @@ class HWList(commands.Cog):
         due_after: Optional[str] = None,
     ):
         await ctx.defer()
-        db_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild_id)
+        db_query = await db_operations.get_classroom(self.bot.db, ctx.guild_id)
 
         # TODO: change this in future
         if db_query["ClassroomSecret"] is None:

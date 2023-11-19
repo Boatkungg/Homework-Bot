@@ -38,7 +38,20 @@ class MainBot(discord.Bot):
             CREATE TABLE IF NOT EXISTS users (
             UserID BIGINT PRIMARY KEY,
             ServerID BIGINT,
-            Password TEXT
+            Password TEXT,
+            FOREIGN KEY (ServerID) REFERENCES servers(ServerID)
+            )
+            """
+        )
+
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS notify (
+            UserID BIGINT PRIMARY KEY,
+            ServerID BIGINT,
+            Mode TEXT,
+            BeforeDue INTEGER,
+            FOREIGN KEY (ServerID) REFERENCES servers(ServerID)
             )
             """
         )

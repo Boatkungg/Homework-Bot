@@ -15,7 +15,7 @@ class GuildConfig(commands.Cog):
     async def set_classroom(self, ctx: ApplicationContext, secret: str):
         await ctx.defer()
         # check if the server is not already registered
-        db_query = await db_operations.get_classroom_secret(self.bot.db, ctx.guild.id)
+        db_query = await db_operations.get_classroom(self.bot.db, ctx.guild.id)
 
         if db_query is None:
             # add the server
