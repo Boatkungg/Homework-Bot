@@ -13,7 +13,7 @@ class addHomeworkCriteria:
 
 
 @dataclass
-class getHomeworksCriteria:
+class listHomeworksCriteria:
     count: Union[int, None] = None
     page: Union[int, None] = None
     assigned_before_date: Union[str, None] = None
@@ -70,7 +70,7 @@ async def remove_homework(
 
 
 async def list_homeworks(
-    http_client, api_url, classroom_secret, criteria: getHomeworksCriteria
+    http_client, api_url, classroom_secret, criteria: listHomeworksCriteria
 ):
     json_query = {
         "classroom_secret": classroom_secret,

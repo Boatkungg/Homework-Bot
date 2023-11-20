@@ -1,43 +1,43 @@
-async def get_classroom(db, guild_id):
+async def get_guild(db, guild_id):
     db_query = await db.fetch_one(
         """
-        SELECT * FROM servers
-        WHERE ServerID = :server_id
+        SELECT * FROM guilds
+        WHERE GuildID = :guild_id
         """,
-        {"server_id": guild_id},
+        {"guild_id": guild_id},
     )
 
     return db_query
 
 
-async def get_all_classrooms(db):
+async def get_all_guilds(db):
     db_query = await db.fetch_all(
         """
-        SELECT * FROM servers
+        SELECT * FROM guilds
         """,
     )
 
     return db_query
 
 
-async def add_classroom(db, guild_id, secret):
+async def add_guild(db, guild_id, secret):
     await db.execute(
         """
-        INSERT INTO servers (ServerID, ClassroomSecret)
-        VALUES (:server_id, :secret)
+        INSERT INTO guilds (GuildID, ClassroomSecret)
+        VALUES (:guild_id, :secret)
         """,
-        {"server_id": guild_id, "secret": secret},
+        {"guild_id": guild_id, "secret": secret},
     )
 
 
-async def update_classroom(db, guild_id, secret):
+async def update_guild(db, guild_id, secret):
     await db.execute(
         """
-        UPDATE servers
+        UPDATE guilds
         SET ClassroomSecret = :secret
-        WHERE ServerID = :server_id
+        WHERE GuildID = :guild_id
         """,
-        {"server_id": guild_id, "secret": secret},
+        {"guild_id": guild_id, "secret": secret},
     )
 
 
@@ -46,9 +46,9 @@ async def get_user_password(db, guild_id, user_id):
         """
         SELECT * FROM users
         WHERE UserID = :user_id 
-        AND ServerID = :server_id
+        AND GuildID = :guild_id
         """,
-        {"user_id": user_id, "server_id": guild_id},
+        {"user_id": user_id, "guild_id": guild_id},
     )
 
     return db_query
@@ -57,12 +57,12 @@ async def get_user_password(db, guild_id, user_id):
 async def add_user(db, guild_id, user_id, password):
     await db.execute(
         """
-        INSERT INTO users (UserID, ServerID, Password)
-        VALUES (:user_id, :server_id, :password)
+        INSERT INTO users (UserID, GuildID, Password)
+        VALUES (:user_id, :guild_id, :password)
         """,
         {
             "user_id": user_id,
-            "server_id": guild_id,
+            "guild_id": guild_id,
             "password": password,
         },
     )
@@ -74,11 +74,11 @@ async def update_user(db, guild_id, user_id, password):
         UPDATE users
         SET Password = :password
         WHERE UserID = :user_id
-        AND ServerID = :server_id
+        AND GuildID = :guild_id
         """,
         {
             "user_id": user_id,
-            "server_id": guild_id,
+            "guild_id": guild_id,
             "password": password,
         },
     )
@@ -89,9 +89,9 @@ async def get_notify(db, guild_id, user_id):
         """
         SELECT * FROM notify
         WHERE UserID = :user_id
-        AND ServerID = :server_id
+        AND GuildID = :guild_id
         """,
-        {"user_id": user_id, "server_id": guild_id},
+        {"user_id": user_id, "guild_id": guild_id},
     )
 
     return db_query
@@ -101,9 +101,9 @@ async def get_all_notifies(db, guild_id):
     db_query = await db.fetch_all(
         """
         SELECT * FROM notify
-        WHERE ServerID = :server_id
+        WHERE GuildID = :guild_id
         """,
-        {"server_id": guild_id},
+        {"guild_id": guild_id},
     )
 
     return db_query
@@ -112,12 +112,12 @@ async def get_all_notifies(db, guild_id):
 async def add_notify(db, guild_id, user_id, mode, before_due):
     await db.execute(
         """
-        INSERT INTO notify (UserID, ServerID, Mode, BeforeDue)
-        VALUES (:user_id, :server_id, :mode, :before_due)
+        INSERT INTO notify (UserID, GuildID, Mode, BeforeDue)
+        VALUES (:user_id, :guild_id, :mode, :before_due)
         """,
         {
             "user_id": user_id,
-            "server_id": guild_id,
+            "guild_id": guild_id,
             "mode": mode,
             "before_due": before_due,
         },
@@ -130,11 +130,11 @@ async def update_notify_mode(db, guild_id, user_id, mode):
         UPDATE notify
         SET Mode = :mode
         WHERE UserID = :user_id
-        AND ServerID = :server_id
+        AND GuildID = :guild_id
         """,
         {
             "user_id": user_id,
-            "server_id": guild_id,
+            "guild_id": guild_id,
             "mode": mode,
         },
     )
@@ -146,11 +146,11 @@ async def update_notify_before_due(db, guild_id, user_id, before_due):
         UPDATE notify
         SET BeforeDue = :before_due
         WHERE UserID = :user_id
-        AND ServerID = :server_id
+        AND GuildID = :guild_id
         """,
         {
             "user_id": user_id,
-            "server_id": guild_id,
+            "guild_id": guild_id,
             "before_due": before_due,
         },
     )
@@ -161,10 +161,10 @@ async def delete_notify(db, guild_id, user_id):
         """
         DELETE FROM notify
         WHERE UserID = :user_id
-        AND ServerID = :server_id
+        AND GuildID = :guild_id
         """,
         {
             "user_id": user_id,
-            "server_id": guild_id,
+            "guild_id": guild_id,
         },
     )

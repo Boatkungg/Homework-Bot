@@ -14,7 +14,7 @@ class HWInfo(commands.Cog):
     @commands.slash_command()
     async def info(self, ctx: ApplicationContext, homework_id: int):
         await ctx.defer()
-        db_query = await db_operations.get_classroom(self.bot.db, ctx.guild.id)
+        db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
         if db_query["ClassroomSecret"] is None:
             await ctx.respond("Classroom not set!")

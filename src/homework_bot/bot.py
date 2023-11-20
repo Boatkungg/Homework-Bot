@@ -26,8 +26,8 @@ class MainBot(discord.Bot):
 
         await self.db.execute(
             """
-            CREATE TABLE IF NOT EXISTS servers (
-            ServerID BIGINT PRIMARY KEY,
+            CREATE TABLE IF NOT EXISTS guilds (
+            GuildID BIGINT PRIMARY KEY,
             ClassroomSecret TEXT
             )
             """
@@ -37,9 +37,9 @@ class MainBot(discord.Bot):
             """
             CREATE TABLE IF NOT EXISTS users (
             UserID BIGINT PRIMARY KEY,
-            ServerID BIGINT,
+            GuildID BIGINT,
             Password TEXT,
-            FOREIGN KEY (ServerID) REFERENCES servers(ServerID)
+            FOREIGN KEY (GuildID) REFERENCES guilds(GuildID)
             )
             """
         )
@@ -48,10 +48,10 @@ class MainBot(discord.Bot):
             """
             CREATE TABLE IF NOT EXISTS notify (
             UserID BIGINT PRIMARY KEY,
-            ServerID BIGINT,
+            GuildID BIGINT,
             Mode TEXT,
             BeforeDue INTEGER,
-            FOREIGN KEY (ServerID) REFERENCES servers(ServerID)
+            FOREIGN KEY (GuildID) REFERENCES guilds(GuildID)
             )
             """
         )

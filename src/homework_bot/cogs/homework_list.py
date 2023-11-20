@@ -33,7 +33,7 @@ class HWListUI(ui.View):
         await self.message.edit_original_response(view=self)
 
     async def get_homeworks(self):
-        criteria = api_operations.getHomeworksCriteria(
+        criteria = api_operations.listHomeworksCriteria(
             count=6,
             page=self.page,
             assigned_before_date=self.criteria.assigned_before,
@@ -198,7 +198,7 @@ class HWList(commands.Cog):
         due_after: Optional[str] = None,
     ):
         await ctx.defer()
-        db_query = await db_operations.get_classroom(self.bot.db, ctx.guild_id)
+        db_query = await db_operations.get_guild(self.bot.db, ctx.guild_id)
 
         # TODO: change this in future
         if db_query["ClassroomSecret"] is None:

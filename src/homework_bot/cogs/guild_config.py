@@ -13,16 +13,16 @@ class GuildConfig(commands.Cog):
     @commands.guild_only()
     @commands.slash_command()
     async def set_classroom(self, ctx: ApplicationContext, secret: str):
-        await ctx.defer()
+        await ctx.defer(ephemeral=True)
         # check if the server is not already registered
-        db_query = await db_operations.get_classroom(self.bot.db, ctx.guild.id)
+        db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
         if db_query is None:
             # add the server
-            await db_operations.add_classroom(self.bot.db, ctx.guild.id, secret)
+            await db_operations.add_guild(self.bot.db, ctx.guild.id, secret)
         else:
             # update the server
-            await db_operations.update_classroom(self.bot.db, ctx.guild.id, secret)
+            await db_operations.update_guild(self.bot.db, ctx.guild.id, secret)
 
         # TODO: change the respond in future
         await ctx.respond("Classroom set!", ephemeral=True)
@@ -30,7 +30,7 @@ class GuildConfig(commands.Cog):
     @commands.guild_only()
     @commands.slash_command()
     async def set_password(self, ctx: ApplicationContext, password: str):
-        await ctx.defer()
+        await ctx.defer(ephemeral=True)
         # check if the user is not already registered
         db_query = await db_operations.get_user_password(
             self.bot.db, ctx.guild.id, ctx.author.id
