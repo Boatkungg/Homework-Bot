@@ -63,13 +63,12 @@ class HWListUI(ui.View):
 
     async def create_embed(self):
         homeworks, self.max_page = await self.get_homeworks()
+        embed = Embed(title="Homework", timestamp=discord.utils.utcnow(), color=self.bot.main_color)
 
         if self.max_page == 0:
-            embed = Embed(title="Homework", timestamp=discord.utils.utcnow())
             embed.set_footer(text="Homework not found")
             return embed
 
-        embed = Embed(title="Homework", timestamp=discord.utils.utcnow())
         embed.set_footer(text=f"Page {self.page}/{self.max_page}")
 
         # 1 • A31101

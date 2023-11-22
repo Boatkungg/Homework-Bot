@@ -1,7 +1,7 @@
 import os
 
 import discord
-from discord import ApplicationContext, Embed
+from discord import ApplicationContext, Embed, Colour
 from dotenv import load_dotenv
 
 from homework_bot.bot import MainBot
@@ -23,7 +23,7 @@ main_bot = MainBot(
 @main_bot.slash_command()
 async def ping(ctx: ApplicationContext):
     # TODO: change the respond in future
-    embed = Embed(title="Pong!")
+    embed = Embed(title="Pong!", color=main_bot.main_color)
     desc = f"Bot latency: {main_bot.latency * 1000:.2f}ms\n"
     # desc += f"API latency: {:.2f}ms"
     embed.description = desc

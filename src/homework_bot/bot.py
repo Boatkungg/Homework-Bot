@@ -2,6 +2,7 @@ import logging
 
 import databases
 import discord
+from discord import Colour
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -10,6 +11,8 @@ logger = logging.getLogger(__name__)
 class MainBot(discord.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.main_color = Colour().from_rgb(153, 146, 185)
 
         self.http_client = httpx.AsyncClient()
         self.db = databases.Database("sqlite:///database.db")
