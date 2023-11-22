@@ -15,6 +15,8 @@ class MainBot(discord.Bot):
         self.db = databases.Database("sqlite:///database.db")
 
     async def on_ready(self):
+        await self.wait_until_ready()
+        
         logger.info(f"Logged in as {self.user}")
         logger.info(f"ID:   {self.user.id}")
         logger.info(f"Ping: {self.latency * 1000:.2}ms")

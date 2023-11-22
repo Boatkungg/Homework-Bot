@@ -1,4 +1,5 @@
 import os
+import time
 
 import discord
 from discord import ApplicationContext, Embed
@@ -20,12 +21,25 @@ main_bot = MainBot(
     debug_guilds=[856028294645153802],
 )
 
+async def measure_api_latency():
+    latency_list = []
+
+    for _ in range(5):
+        start = time.monotonic()
+        await main_bot.http_client.get(API_URL)
+        latency_list.append(time.monotonic() - start)
+    
+    return sum(latency_list) / len(latency_list)
+
+
 @main_bot.slash_command()
 async def ping(ctx: ApplicationContext):
     # TODO: change the respond in future
+    api_latency = await measure_api_latency()
+
     embed = Embed(title="Pong!")
     desc = f"Bot latency: {main_bot.latency * 1000:.2f}ms\n"
-    # desc += f"API latency: {:.2f}ms"
+    desc += f"API latency: {api_latency:.2f}ms"
     embed.description = desc
     await ctx.respond(embed=embed)
 
