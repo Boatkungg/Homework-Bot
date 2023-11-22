@@ -1,12 +1,18 @@
 import os
 import time
+import logging
+import traceback
 
 import discord
-from discord import ApplicationContext, Embed, Colour
+from discord import ApplicationContext, Embed, Colour, DiscordException
 from dotenv import load_dotenv
+from httpx import ConnectError
 
+from homework_bot import responses
 from homework_bot.bot import MainBot
 from homework_bot.cogs import GuildConfig, HWInfo, HWList, HWManagement, HWNotify
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -21,14 +27,29 @@ main_bot = MainBot(
     debug_guilds=[856028294645153802],
 )
 
+
+@main_bot.event
+async def on_application_command_error(ctx: ApplicationContext, error: DiscordException):
+    logger.error(f"An error occurred: {error}")
+    logger.error(traceback.extract_tb(error.__cause__.__traceback__))
+    await responses.normal_response(
+        ctx,
+        f"**An internal error occurred**\n```py\n{error}```",
+        color=Colour.red(),
+    )
+
+
 async def measure_api_latency():
     latency_list = []
 
     for _ in range(5):
         start = time.monotonic()
-        await main_bot.http_client.get(API_URL)
+        try:
+            await main_bot.http_client.get(API_URL)
+        except ConnectError:
+            return None
         latency_list.append(time.monotonic() - start)
-    
+
     return sum(latency_list) / len(latency_list)
 
 
@@ -36,10 +57,13 @@ async def measure_api_latency():
 async def ping(ctx: ApplicationContext):
     # TODO: change the respond in future
     api_latency = await measure_api_latency()
+    desc = f"**Bot latency**: {main_bot.latency * 1000:.2f}ms\n"
+    if api_latency is None:
+        desc += "**API latency**: N/A"
+    else:
+        desc += f"**API latency**: {api_latency:.2f}ms"
 
     embed = Embed(title="Pong!", color=main_bot.main_color)
-    desc = f"Bot latency: {main_bot.latency * 1000:.2f}ms\n"
-    desc += f"API latency: {api_latency:.2f}ms"
     embed.description = desc
     await ctx.respond(embed=embed)
 

@@ -36,6 +36,7 @@ class HWInfo(commands.Cog):
         embed = Embed(
             title=f"#{homework['homework_id']} • {homework['subject']}",
             timestamp=discord.utils.utcnow(),
+            color=self.bot.main_color,
         )
 
         description = "```\n"

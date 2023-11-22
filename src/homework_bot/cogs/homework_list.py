@@ -30,7 +30,7 @@ class HWListUI(ui.View):
 
     async def on_timeout(self):
         self.disable_all_items()
-        await self.message.edit_original_response(view=self)
+        await self.message.edit(view=self)
 
     async def get_homeworks(self):
         criteria = api_operations.listHomeworksCriteria(
@@ -63,7 +63,11 @@ class HWListUI(ui.View):
 
     async def create_embed(self):
         homeworks, self.max_page = await self.get_homeworks()
-        embed = Embed(title="Homework", timestamp=discord.utils.utcnow(), color=self.bot.main_color)
+        embed = Embed(
+            title="Homework",
+            timestamp=discord.utils.utcnow(),
+            color=self.bot.main_color,
+        )
 
         if self.max_page == 0:
             embed.set_footer(text="Homework not found")
@@ -95,7 +99,7 @@ class HWListUI(ui.View):
         embed = await self.create_embed()
         self.update_button()
 
-        await self.message.edit_original_response(embed=embed, view=self)
+        await self.message.edit(embed=embed, view=self)
 
     def update_button(self):
         frst, prev, nxt, last = None, None, None, None

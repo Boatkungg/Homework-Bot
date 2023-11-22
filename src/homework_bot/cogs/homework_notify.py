@@ -9,6 +9,8 @@ from discord.ext import commands, tasks
 
 from homework_bot import api_operations, db_operations
 
+logger = logging.getLogger(__name__)
+
 timezone_delta = datetime.timedelta(hours=7)
 timezone = datetime.timezone(timezone_delta)
 
@@ -48,7 +50,7 @@ async def get_homeworks(
     )
 
     if error is not None:
-        logging.error(f"An error occured when listing homeworks: {error}")
+        logger.error(f"An error occured when listing homeworks: {error}")
         return None
 
     daily_homeworks = [
@@ -101,7 +103,9 @@ def make_no_homework_embed(title: str, color):
     return embed
 
 
-def make_homework_embed(homeworks: List[dict], title: str, pages: int = None, color=Embed.Empty):
+def make_homework_embed(
+    homeworks: List[dict], title: str, pages: int = None, color=Embed.Empty
+):
     if len(homeworks) == 0:
         return make_no_homework_embed(title, color)
 
@@ -124,7 +128,7 @@ class HWNotify(commands.Cog):
     def __init__(self, bot, api_url):
         self.bot = bot
         self.api_url = api_url
-        self.send_notify.start() # pylint: disable=no-member
+        self.send_notify.start()  # pylint: disable=no-member
 
     notify = SlashCommandGroup("notify", "Commands for notify")
 
@@ -132,7 +136,9 @@ class HWNotify(commands.Cog):
     async def set(
         self,
         ctx: ApplicationContext,
-        schedule: Option(str, choices=["disable", "all", "daily", "due"], required=True)
+        schedule: Option(
+            str, choices=["disable", "all", "daily", "due"], required=True
+        ),
     ):
         await ctx.defer(ephemeral=True)
         db_query = await db_operations.get_notify(
@@ -144,14 +150,14 @@ class HWNotify(commands.Cog):
                 self.bot.db, ctx.guild.id, ctx.author.id, schedule, 3
             )
 
-            await ctx.respond(f"Set notify to {schedule}!", ephemeral=True)
+            await ctx.respond(f"Set notify to {schedule}!")
 
         else:
             await db_operations.update_notify_mode(
                 self.bot.db, ctx.guild.id, ctx.author.id, schedule
             )
 
-            await ctx.respond(f"Updated notify to {schedule}!", ephemeral=True)
+            await ctx.respond(f"Updated notify to {schedule}!")
 
     @commands.guild_only()
     @notify.command()
@@ -223,8 +229,10 @@ class HWNotify(commands.Cog):
                 continue
 
             daily_embed = make_homework_embed(
-                daily_homeworks, "Daily Homework", 
-                pages=pages, color=self.bot.main_color
+                daily_homeworks,
+                "Daily Homework",
+                pages=pages,
+                color=self.bot.main_color,
             )
 
             await send_notifications(self.bot, notifies_daily, daily_embed)
@@ -257,8 +265,10 @@ class HWNotify(commands.Cog):
                     continue
 
                 due_embed = make_homework_embed(
-                    due_homeworks, f"{before_due} Days Before Due", 
-                    pages=pages, color=self.bot.main_color
+                    due_homeworks,
+                    f"{before_due} Days Until Due",
+                    pages=pages,
+                    color=self.bot.main_color,
                 )
 
                 await send_notifications(self.bot, user_ids, due_embed)

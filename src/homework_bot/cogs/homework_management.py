@@ -5,7 +5,7 @@ from discord import ApplicationContext
 from discord.commands import SlashCommandGroup
 from discord.ext import commands
 
-from homework_bot import api_operations, db_operations, utils
+from homework_bot import api_operations, db_operations, responses, utils
 
 
 class HWManagement(commands.Cog):
@@ -29,18 +29,22 @@ class HWManagement(commands.Cog):
         assigned: Optional[str],
     ):
         await ctx.defer()
-        if not utils.check_valid_date(assigned) or not utils.check_valid_date(due):
-            # TODO: change the respond in future
-            await ctx.respond("Invalid assigned or due date!", ephemeral=True)
+        if not utils.check_valid_dates([due, assigned]):
+            await responses.normal_response(
+                ctx,
+                "**Invalid date format** example: `2023-12-31`",
+                color=self.bot.main_color,
+            )
             return
 
-        db_classroom_query = await db_operations.get_guild(
-            self.bot.db, ctx.guild.id
-        )
+        db_classroom_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
         if db_classroom_query is None:
-            # TODO: change the respond in future
-            await ctx.respond("You haven't set your classroom yet!")
+            await responses.normal_response(
+                ctx,
+                "**You haven't set your classroom**",
+                color=self.bot.main_color,
+            )
             return
 
         classroom_secret = db_classroom_query["ClassroomSecret"]
@@ -50,8 +54,11 @@ class HWManagement(commands.Cog):
         )
 
         if db_password_query is None:
-            # TODO: change the respond in future
-            await ctx.respond("You haven't set your password yet!")
+            await responses.normal_response(
+                ctx,
+                "**You haven't set your password**",
+                color=self.bot.main_color,
+            )
             return
 
         password = (
@@ -74,31 +81,39 @@ class HWManagement(commands.Cog):
         )
 
         if error == "NO_TEACHER":
-            # TODO: change the respond in future
-            await ctx.respond("You need to specify `teacher` for this homework")
+            await responses.normal_response(
+                ctx,
+                "**You need to specify** `teacher` **for this homework**",
+                color=self.bot.main_color,
+            )
             return
 
         if error is not None:
-            # TODO: change the respond in future
-            await ctx.respond("An error occured!")
+            await responses.normal_response(
+                ctx,
+                "**An error occurred**",
+                color=self.bot.main_color,
+            )
             return
 
-        # TODO: change the respond in future
-        await ctx.respond(
-            f"Homework added! ID: {json_response['response']['context']['homework_id']}"
+        await responses.normal_response(
+            ctx,
+            f"**Homework added** ID: `{json_response['response']['context']['homework_id']}`",
+            color=self.bot.main_color,
         )
 
     @commands.guild_only()
     @homework.command()
     async def remove(self, ctx: ApplicationContext, homework_id: int):
         await ctx.defer()
-        db_classroom_query = await db_operations.get_guild(
-            self.bot.db, ctx.guild.id
-        )
+        db_classroom_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
         if db_classroom_query is None:
-            # TODO: change the respond in future
-            await ctx.respond("You haven't set your classroom yet!")
+            await responses.normal_response(
+                ctx,
+                "**You haven't set your classroom**",
+                color=self.bot.main_color,
+            )
             return
 
         classroom_secret = db_classroom_query["ClassroomSecret"]
@@ -108,8 +123,11 @@ class HWManagement(commands.Cog):
         )
 
         if db_password_query is None:
-            # TODO: change the respond in future
-            await ctx.respond("You haven't set your password yet!")
+            await responses.normal_response(
+                ctx,
+                "**You haven't set your password**",
+                color=self.bot.main_color,
+            )
             return
 
         password = (
@@ -125,14 +143,23 @@ class HWManagement(commands.Cog):
         )
 
         if error == "HOMEWORK_NOT_FOUND":
-            # TODO: change the respond in future
-            await ctx.respond("Homework not found!")
+            await responses.normal_response(
+                ctx,
+                "**Homework not found**",
+                color=self.bot.main_color,
+            )
             return
 
         if error is not None:
-            # TODO: change the respond in future
-            await ctx.respond("An error occured!")
+            await responses.normal_response(
+                ctx,
+                "**An error occurred**",
+                color=self.bot.main_color,
+            )
             return
 
-        # TODO: change the respond in future
-        await ctx.respond("Homework removed!")
+        await responses.normal_response(
+            ctx,
+            "**Homework removed**",
+            color=self.bot.main_color,
+        )

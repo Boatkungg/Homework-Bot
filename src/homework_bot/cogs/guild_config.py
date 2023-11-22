@@ -2,7 +2,7 @@ from cryptography.fernet import Fernet
 from discord import ApplicationContext
 from discord.ext import commands
 
-from homework_bot import db_operations
+from homework_bot import db_operations, responses
 
 
 class GuildConfig(commands.Cog):
@@ -13,7 +13,7 @@ class GuildConfig(commands.Cog):
     @commands.guild_only()
     @commands.slash_command()
     async def set_classroom(self, ctx: ApplicationContext, secret: str):
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
         # check if the server is not already registered
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
@@ -25,7 +25,9 @@ class GuildConfig(commands.Cog):
             await db_operations.update_guild(self.bot.db, ctx.guild.id, secret)
 
         # TODO: change the respond in future
-        await ctx.respond("Classroom set!", ephemeral=True)
+        await responses.normal_response(
+            ctx, "**Classroom has been set!**", color=self.bot.main_color
+        )
 
     @commands.guild_only()
     @commands.slash_command()
@@ -50,4 +52,6 @@ class GuildConfig(commands.Cog):
             )
 
         # TODO: change the respond in future
-        await ctx.respond("Password set!", ephemeral=True)
+        await responses.normal_response(
+            ctx, "**Password has been set!**", color=self.bot.main_color
+        )

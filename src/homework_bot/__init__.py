@@ -4,6 +4,7 @@ from .api_operations import *
 from .bot import *
 from .cogs import *
 from .db_operations import *
+from .responses import *
 from .utils import *
 
 logger = logging.getLogger(__name__)

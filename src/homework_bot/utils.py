@@ -1,13 +1,18 @@
 from datetime import datetime
-from typing import Union
+from typing import List, Union
 
 
-def check_valid_date(date: Union[str, None]):
-    if date is None:
-        return True
+def check_valid_dates(dates: List[Union[str, None]]):
+    valids = []
+    for date in dates:
+        if date is None:
+            valids.append(True)
+            continue
 
-    try:
-        datetime.strptime(date, "%Y-%m-%d")
-        return True
-    except ValueError:
-        return False
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+            valids.append(True)
+        except ValueError:
+            valids.append(False)
+
+    return all(valids)
