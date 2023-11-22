@@ -64,10 +64,11 @@ async def get_homeworks(
     return daily_homeworks, api_response["response"]["context"]["max_page"]
 
 
-def make_embed(homeworks: List[dict], title: str, message: str = None):
+def make_embed(homeworks: List[dict], title: str, color, message: str = None):
     embed = Embed(
         title=title,
         timestamp=discord.utils.utcnow(),
+        color=color,
     )
 
     description = "```\n"
@@ -88,10 +89,11 @@ def make_embed(homeworks: List[dict], title: str, message: str = None):
     return embed
 
 
-def make_no_homework_embed(title: str):
+def make_no_homework_embed(title: str, color):
     embed = Embed(
         title=title,
         timestamp=discord.utils.utcnow(),
+        color=color,
     )
 
     embed.set_footer(text="No homework yay!")
@@ -99,11 +101,11 @@ def make_no_homework_embed(title: str):
     return embed
 
 
-def make_homework_embed(homeworks: List[dict], title: str, pages: int = None):
+def make_homework_embed(homeworks: List[dict], title: str, pages: int = None, color=Embed.Empty):
     if len(homeworks) == 0:
-        return make_no_homework_embed(title)
+        return make_no_homework_embed(title, color)
 
-    return make_embed(homeworks, title, ("more..." if pages > 1 else None))
+    return make_embed(homeworks, title, color, ("more..." if pages > 1 else None))
 
 
 async def send_notifications(bot, users, embed):
@@ -220,9 +222,10 @@ class HWNotify(commands.Cog):
             if daily_homeworks is None:
                 continue
 
-            print(daily_homeworks)
-
-            daily_embed = make_homework_embed(daily_homeworks, "Daily Homework", pages)
+            daily_embed = make_homework_embed(
+                daily_homeworks, "Daily Homework", 
+                pages=pages, color=self.bot.main_color
+            )
 
             await send_notifications(self.bot, notifies_daily, daily_embed)
 
@@ -254,7 +257,8 @@ class HWNotify(commands.Cog):
                     continue
 
                 due_embed = make_homework_embed(
-                    due_homeworks, f"{before_due} Days Before Due", pages
+                    due_homeworks, f"{before_due} Days Before Due", 
+                    pages=pages, color=self.bot.main_color
                 )
 
                 await send_notifications(self.bot, user_ids, due_embed)
