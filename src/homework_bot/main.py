@@ -1,10 +1,10 @@
+import logging
 import os
 import time
-import logging
 import traceback
 
 import discord
-from discord import ApplicationContext, Embed, Colour, DiscordException
+from discord import ApplicationContext, Colour, DiscordException, Embed
 from dotenv import load_dotenv
 from httpx import ConnectError
 
@@ -29,7 +29,9 @@ main_bot = MainBot(
 
 
 @main_bot.event
-async def on_application_command_error(ctx: ApplicationContext, error: DiscordException):
+async def on_application_command_error(
+    ctx: ApplicationContext, error: DiscordException
+):
     logger.error(f"An error occurred: {error}")
     logger.error(traceback.extract_tb(error.__cause__.__traceback__))
     await responses.normal_response(

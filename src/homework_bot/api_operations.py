@@ -40,9 +40,7 @@ async def add_homework(
         "due_date": criteria.due_date,
     }
 
-    api_response = await http_client.post(
-        api_url + "/homework/add", json=json_query
-    )
+    api_response = await http_client.post(api_url + "/homework/add", json=json_query)
 
     json_response = api_response.json()
     return json_response, json_response["response"]["error"]
@@ -61,9 +59,7 @@ async def remove_homework(
         "homework_id": homework_id,
     }
 
-    api_response = await http_client.post(
-        api_url + "/homework/remove", json=json_query
-    )
+    api_response = await http_client.post(api_url + "/homework/remove", json=json_query)
 
     json_response = api_response.json()
     return json_response, json_response["response"]["error"]
@@ -82,25 +78,19 @@ async def list_homeworks(
         "due_after_date": criteria.due_after_date,
     }
 
-    api_response = await http_client.post(
-        api_url + "/homework/list", json=json_query
-    )
+    api_response = await http_client.post(api_url + "/homework/list", json=json_query)
 
     json_response = api_response.json()
     return json_response, json_response["response"]["error"]
 
 
-async def get_homework(
-    http_client, api_url, classroom_secret, homework_id: str
-):
+async def get_homework(http_client, api_url, classroom_secret, homework_id: str):
     json_query = {
         "classroom_secret": classroom_secret,
         "homework_id": homework_id,
     }
 
-    api_response = await http_client.post(
-        api_url + "/homework/get", json=json_query
-    )
+    api_response = await http_client.post(api_url + "/homework/get", json=json_query)
 
     json_response = api_response.json()
     return json_response, json_response["response"]["error"]
