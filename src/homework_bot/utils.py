@@ -16,3 +16,13 @@ def check_valid_dates(dates: List[Union[str, None]]):
             valids.append(False)
 
     return all(valids)
+
+
+def pretty_time(seconds):
+    if seconds >= 1:
+        return f"{seconds:.2f}s"
+
+    if seconds >= 0.001:
+        return f"{seconds * 1000:.2f}ms"
+
+    return f"{seconds * 1000000:.2f}µs"

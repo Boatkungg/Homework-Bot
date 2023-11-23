@@ -11,6 +11,7 @@ from httpx import ConnectError
 from homework_bot import responses
 from homework_bot.bot import MainBot
 from homework_bot.cogs import GuildConfig, HWInfo, HWList, HWManagement, HWNotify
+from homework_bot.utils import pretty_time
 
 logger = logging.getLogger(__name__)
 
@@ -57,15 +58,17 @@ async def measure_api_latency():
 
 @main_bot.slash_command()
 async def ping(ctx: ApplicationContext):
-    # TODO: change the respond in future
     api_latency = await measure_api_latency()
-    desc = f"**Bot latency**: {main_bot.latency * 1000:.2f}ms\n"
-    if api_latency is None:
-        desc += "**API latency**: N/A"
-    else:
-        desc += f"**API latency**: {api_latency:.2f}ms"
+    desc = "```\n"
+    desc += f"Websocket :  {pretty_time(main_bot.latency)}\n"
 
-    embed = Embed(title="Pong!", color=main_bot.main_color)
+    if api_latency is None:
+        desc += "API: N/A"
+    else:
+        desc += f"API\t   :  {pretty_time(api_latency)}\n"
+
+    desc += "```"
+    embed = Embed(title="Pong! Latencies", color=main_bot.main_color)
     embed.description = desc
     await ctx.respond(embed=embed)
 

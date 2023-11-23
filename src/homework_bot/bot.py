@@ -5,6 +5,8 @@ import discord
 import httpx
 from discord import Colour
 
+from homework_bot.utils import pretty_time
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +24,7 @@ class MainBot(discord.Bot):
 
         logger.info(f"Logged in as {self.user}")
         logger.info(f"ID:   {self.user.id}")
-        logger.info(f"Ping: {self.latency * 1000:.2}ms")
+        logger.info(f"Ping: {pretty_time(self.latency)}")
 
         logger.info("-" * 20)
         logger.info("Setting up...")
