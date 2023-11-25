@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import Optional
 
 import discord
-from discord import ApplicationContext, Embed, Interaction, ui
+from discord import ApplicationContext, Colour, Embed, Interaction, ui
 from discord.ext import commands
 
-from homework_bot import api_operations, db_operations
+from homework_bot import api_operations, db_operations, responses
 
 
 @dataclass
@@ -203,9 +203,10 @@ class HWList(commands.Cog):
         await ctx.defer()
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild_id)
 
-        # TODO: change this in future
-        if db_query["ClassroomSecret"] is None:
-            await ctx.respond("Classroom not set!")
+        if db_query is None:
+            await responses.normal_response(
+                ctx, "**Classroom not set**", color=Colour.red()
+            )
             return
 
         criteria = HWListCriteria()

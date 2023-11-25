@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import time
 import traceback
 
@@ -25,7 +26,6 @@ main_bot = MainBot(
     status=discord.Status.dnd,
     activity=discord.Game("with your homework"),
     intents=discord.Intents.default(),
-    debug_guilds=[856028294645153802],
 )
 
 
@@ -33,13 +33,26 @@ main_bot = MainBot(
 async def on_application_command_error(
     ctx: ApplicationContext, error: DiscordException
 ):
-    logger.error(f"An error occurred: {error}")
-    logger.error(traceback.extract_tb(error.__cause__.__traceback__))
-    await responses.normal_response(
-        ctx,
-        f"**An internal error occurred**\n```py\n{error}```",
-        color=Colour.red(),
-    )
+    try:
+        if isinstance(error.__cause__, (ConnectError)):
+            logger.info("The API is down")
+            await responses.normal_response(
+                ctx,
+                "**The API is down**\nPlease try again later",
+                color=Colour.red(),
+            )
+            return
+
+        logger.error(f"An error occurred: {error}")
+        logger.error(str().join(traceback.format_tb(error.__cause__.__traceback__)))
+
+        await responses.normal_response(
+            ctx,
+            f"**An internal error occurred**\n```py\n{error}```",
+            color=Colour.red(),
+        )
+    except DiscordException:
+        pass
 
 
 async def measure_api_latency():
@@ -59,15 +72,15 @@ async def measure_api_latency():
 @main_bot.slash_command()
 async def ping(ctx: ApplicationContext):
     api_latency = await measure_api_latency()
-    desc = "```\n"
-    desc += f"Websocket :  {pretty_time(main_bot.latency)}\n"
 
-    if api_latency is None:
-        desc += "API: N/A"
-    else:
-        desc += f"API\t   :  {pretty_time(api_latency)}\n"
-
-    desc += "```"
+    desc = f"""
+    ```ml
+    Websocket ::  {pretty_time(main_bot.latency)}
+    API       ::  {pretty_time(api_latency) if api_latency is not None else "N/A"}
+    ```
+    """
+    # remove tabs at the start of each line
+    desc = re.sub(r"^\s+", "", desc, flags=re.MULTILINE)
     embed = Embed(title="Pong! Latencies", color=main_bot.main_color)
     embed.description = desc
     await ctx.respond(embed=embed)

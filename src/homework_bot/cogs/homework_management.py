@@ -1,7 +1,7 @@
 from typing import Optional
 
 from cryptography.fernet import Fernet
-from discord import ApplicationContext
+from discord import ApplicationContext, Colour
 from discord.commands import SlashCommandGroup
 from discord.ext import commands
 
@@ -90,9 +90,7 @@ class HWManagement(commands.Cog):
 
         if error is not None:
             await responses.normal_response(
-                ctx,
-                "**An error occurred**",
-                color=self.bot.main_color,
+                ctx, f"**Something went wrong**\nError: `{error}`", color=Colour.red()
             )
             return
 
@@ -152,9 +150,7 @@ class HWManagement(commands.Cog):
 
         if error is not None:
             await responses.normal_response(
-                ctx,
-                "**An error occurred**",
-                color=self.bot.main_color,
+                ctx, f"**Something went wrong**\nError: `{error}`", color=Colour.red()
             )
             return
 

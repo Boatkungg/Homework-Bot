@@ -1,8 +1,8 @@
 import discord
-from discord import ApplicationContext, Embed
+from discord import ApplicationContext, Colour, Embed
 from discord.ext import commands
 
-from homework_bot import api_operations, db_operations
+from homework_bot import api_operations, db_operations, responses
 
 
 class HWInfo(commands.Cog):
@@ -16,8 +16,10 @@ class HWInfo(commands.Cog):
         await ctx.defer()
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
-        if db_query["ClassroomSecret"] is None:
-            await ctx.respond("Classroom not set!")
+        if db_query is None:
+            await responses.normal_response(
+                ctx, "**Classroom not set**", color=Colour.red()
+            )
             return
 
         json_response, error = await api_operations.get_homework(
@@ -28,7 +30,9 @@ class HWInfo(commands.Cog):
         )
 
         if error is not None:
-            await ctx.respond(error)
+            await responses.normal_response(
+                ctx, f"**Something went wrong**\nError: `{error}`", color=Colour.red()
+            )
             return
 
         homework = json_response["response"]["context"]

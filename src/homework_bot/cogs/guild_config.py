@@ -24,9 +24,8 @@ class GuildConfig(commands.Cog):
             # update the server
             await db_operations.update_guild(self.bot.db, ctx.guild.id, secret)
 
-        # TODO: change the respond in future
         await responses.normal_response(
-            ctx, "**Classroom has been set!**", color=self.bot.main_color
+            ctx, "**Classroom has been set**", color=self.bot.main_color
         )
 
     @commands.guild_only()
@@ -51,7 +50,6 @@ class GuildConfig(commands.Cog):
                 self.bot.db, ctx.guild.id, ctx.author.id, encrypted_password
             )
 
-        # TODO: change the respond in future
         await responses.normal_response(
-            ctx, "**Password has been set!**", color=self.bot.main_color
+            ctx, "**Password has been set**", color=self.bot.main_color
         )

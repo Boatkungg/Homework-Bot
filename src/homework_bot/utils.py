@@ -23,6 +23,6 @@ def pretty_time(seconds):
         return f"{seconds:.2f}s"
 
     if seconds >= 0.001:
-        return f"{seconds * 1000:.2f}ms"
+        return f"{str(round(seconds * 1000)).zfill(3)}ms"
 
-    return f"{seconds * 1000000:.2f}µs"
+    return f"{str(round(seconds * 1000000)).zfill(3)}µs"

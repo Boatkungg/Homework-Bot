@@ -3,11 +3,11 @@ import logging
 from typing import List
 
 import discord
-from discord import ApplicationContext, Embed, Option
+from discord import ApplicationContext, Embed, Option, Colour
 from discord.commands import SlashCommandGroup
 from discord.ext import commands, tasks
 
-from homework_bot import api_operations, db_operations
+from homework_bot import api_operations, db_operations, responses
 
 logger = logging.getLogger(__name__)
 
@@ -150,14 +150,16 @@ class HWNotify(commands.Cog):
                 self.bot.db, ctx.guild.id, ctx.author.id, schedule, 3
             )
 
-            await ctx.respond(f"Set notify to {schedule}!")
-
         else:
             await db_operations.update_notify_mode(
                 self.bot.db, ctx.guild.id, ctx.author.id, schedule
             )
 
-            await ctx.respond(f"Updated notify to {schedule}!")
+        await responses.normal_response(
+            ctx,
+            f"**Set notify to** {schedule}",
+            color=self.bot.main_color,
+        )
 
     @commands.guild_only()
     @notify.command()
@@ -168,14 +170,22 @@ class HWNotify(commands.Cog):
         )
 
         if db_query is None:
-            await ctx.respond("You haven't set your notify mode yet!")
+            await responses.normal_response(
+                ctx,
+                "**You need to setup notify first**\nCommand: `/notify set`",
+                color=Colour.red(),
+            )
             return
 
         await db_operations.update_notify_before_due(
             self.bot.db, ctx.guild.id, ctx.author.id, before_due
         )
 
-        await ctx.respond(f"Updated notify setting to {before_due}!", ephemeral=True)
+        await responses.normal_response(
+            ctx,
+            f"**Updated notify setting to** `{before_due}`",
+            color=self.bot.main_color,
+        )
 
     @tasks.loop(time=datetime.time(hour=18, tzinfo=timezone))
     async def send_notify(self):
