@@ -6,6 +6,7 @@ import traceback
 
 import discord
 from discord import ApplicationContext, Colour, DiscordException, Embed
+from pycord import multicog
 from dotenv import load_dotenv
 from httpx import ConnectError
 
@@ -26,6 +27,7 @@ main_bot = MainBot(
     status=discord.Status.dnd,
     activity=discord.Game("with your homework"),
     intents=discord.Intents.default(),
+    debug_guilds=[856028294645153802],
 )
 
 
@@ -85,11 +87,12 @@ async def ping(ctx: ApplicationContext):
     embed.description = desc
     await ctx.respond(embed=embed)
 
-
 main_bot.add_cog(HWManagement(main_bot, key, API_URL))
 main_bot.add_cog(GuildConfig(main_bot, key))
 main_bot.add_cog(HWList(main_bot, API_URL))
 main_bot.add_cog(HWInfo(main_bot, API_URL))
 main_bot.add_cog(HWNotify(main_bot, API_URL))
+
+multicog.apply_multicog(main_bot)
 
 main_bot.run(os.getenv("TOKEN"))
