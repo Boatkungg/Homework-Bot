@@ -1,5 +1,6 @@
 from cryptography.fernet import Fernet
 from discord import ApplicationContext
+from discord.commands import SlashCommandGroup, default_permissions
 from discord.ext import commands
 
 from homework_bot import db_operations, responses
@@ -10,10 +11,13 @@ class GuildConfig(commands.Cog):
         self.bot = bot
         self.key = key
 
+    guild = SlashCommandGroup("guild", "Commands for guild")
+
     @commands.guild_only()
-    @commands.slash_command()
-    async def set_classroom(self, ctx: ApplicationContext, secret: str):
-        await ctx.defer()
+    @commands.has_permissions(administrator=True)
+    @guild.command()
+    async def secret(self, ctx: ApplicationContext, secret: str):
+        await ctx.defer(ephemeral=True)
         # check if the server is not already registered
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
@@ -29,8 +33,8 @@ class GuildConfig(commands.Cog):
         )
 
     @commands.guild_only()
-    @commands.slash_command()
-    async def set_password(self, ctx: ApplicationContext, password: str):
+    @guild.command()
+    async def password(self, ctx: ApplicationContext, password: str):
         await ctx.defer(ephemeral=True)
         # check if the user is not already registered
         db_query = await db_operations.get_user_password(
@@ -53,3 +57,12 @@ class GuildConfig(commands.Cog):
         await responses.normal_response(
             ctx, "**Password has been set**", color=self.bot.main_color
         )
+
+    @secret.error
+    async def secret_error(self, ctx: ApplicationContext, error):
+        if isinstance(error, commands.MissingPermissions):
+            await responses.normal_response(
+                ctx,
+                "**You don't have permission to use this command**",
+                color=self.bot.main_color,
+            )

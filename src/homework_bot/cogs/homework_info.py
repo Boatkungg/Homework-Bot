@@ -1,7 +1,7 @@
 import discord
 from discord import ApplicationContext, Colour, Embed
-from pycord import multicog
 from discord.ext import commands
+from pycord.multicog import add_to_group
 
 from homework_bot import api_operations, db_operations, responses
 
@@ -12,7 +12,7 @@ class HWInfo(commands.Cog):
         self.api_url = api_url
 
     @commands.guild_only()
-    @multicog.add_to_group("homework")
+    @add_to_group("homework")
     @commands.slash_command()
     async def info(self, ctx: ApplicationContext, homework_id: int):
         await ctx.defer()

@@ -187,6 +187,7 @@ class HWNotify(commands.Cog):
             color=self.bot.main_color,
         )
 
+    # TODO: add checking if the classroom is wrong
     @tasks.loop(time=datetime.time(hour=18, tzinfo=timezone))
     async def send_notify(self):
         """

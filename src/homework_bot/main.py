@@ -6,13 +6,21 @@ import traceback
 
 import discord
 from discord import ApplicationContext, Colour, DiscordException, Embed
-from pycord import multicog
+from discord.ext import commands
 from dotenv import load_dotenv
 from httpx import ConnectError
+from pycord.multicog import apply_multicog
 
 from homework_bot import responses
 from homework_bot.bot import MainBot
-from homework_bot.cogs import GuildConfig, HWInfo, HWList, HWManagement, HWNotify
+from homework_bot.cogs import (
+    GuildConfig,
+    HWInfo,
+    HWList,
+    HWManagement,
+    HWNotify,
+    HWStatistic,
+)
 from homework_bot.utils import pretty_time
 
 logger = logging.getLogger(__name__)
@@ -34,8 +42,12 @@ main_bot = MainBot(
 @main_bot.event
 async def on_application_command_error(
     ctx: ApplicationContext, error: DiscordException
-):
+):  
     try:
+        if isinstance(error, (commands.CheckFailure)):
+            logger.error(f"An error occurred: {error}")
+            return
+        
         if isinstance(error.__cause__, (ConnectError)):
             logger.info("The API is down")
             await responses.normal_response(
@@ -46,7 +58,10 @@ async def on_application_command_error(
             return
 
         logger.error(f"An error occurred: {error}")
-        logger.error(str().join(traceback.format_tb(error.__cause__.__traceback__)))
+        if error.__cause__ is None:
+            logger.error(str().join(traceback.format_tb(error.__traceback__)))
+        else:
+            logger.error(str().join(traceback.format_tb(error.__cause__.__traceback__)))
 
         await responses.normal_response(
             ctx,
@@ -87,12 +102,14 @@ async def ping(ctx: ApplicationContext):
     embed.description = desc
     await ctx.respond(embed=embed)
 
-main_bot.add_cog(HWManagement(main_bot, key, API_URL))
+
 main_bot.add_cog(GuildConfig(main_bot, key))
 main_bot.add_cog(HWList(main_bot, API_URL))
 main_bot.add_cog(HWInfo(main_bot, API_URL))
 main_bot.add_cog(HWNotify(main_bot, API_URL))
+main_bot.add_cog(HWStatistic(main_bot, API_URL))
+main_bot.add_cog(HWManagement(main_bot, key, API_URL))
 
-multicog.apply_multicog(main_bot)
+apply_multicog(main_bot)
 
 main_bot.run(os.getenv("TOKEN"))

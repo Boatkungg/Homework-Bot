@@ -22,6 +22,13 @@ class listHomeworksCriteria:
     due_after_date: Union[str, None] = None
 
 
+@dataclass
+class getStatisticsCriteria:
+    subject: Union[str, None] = None
+    assigned_before_date: Union[str, None] = None
+    assigned_after_date: Union[str, None] = None
+
+
 async def add_homework(
     http_client,
     api_url,
@@ -91,6 +98,24 @@ async def get_homework(http_client, api_url, classroom_secret, homework_id: str)
     }
 
     api_response = await http_client.post(api_url + "/homework/get", json=json_query)
+
+    json_response = api_response.json()
+    return json_response, json_response["response"]["error"]
+
+
+async def get_statistics(
+    http_client, api_url, classroom_secret, criteria: getStatisticsCriteria
+):
+    json_query = {
+        "classroom_secret": classroom_secret,
+        "subject": criteria.subject,
+        "assigned_before_date": criteria.assigned_before_date,
+        "assigned_after_date": criteria.assigned_after_date,
+    }
+
+    api_response = await http_client.post(
+        api_url + "/homework/statistics", json=json_query
+    )
 
     json_response = api_response.json()
     return json_response, json_response["response"]["error"]

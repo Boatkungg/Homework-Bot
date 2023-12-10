@@ -4,7 +4,7 @@ from typing import Optional
 import discord
 from discord import ApplicationContext, Colour, Embed, Interaction, ui
 from discord.ext import commands
-from pycord import multicog
+from pycord.multicog import add_to_group
 
 from homework_bot import api_operations, db_operations, responses
 
@@ -190,7 +190,7 @@ class HWList(commands.Cog):
         self.api_url = api_url
 
     @commands.guild_only()
-    @multicog.add_to_group("homework")
+    @add_to_group("homework")
     @commands.slash_command()
     async def list(
         self,
