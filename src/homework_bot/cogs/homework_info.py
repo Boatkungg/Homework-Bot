@@ -1,9 +1,12 @@
 import discord
+from cacheout import Cache
 from discord import ApplicationContext, Colour, Embed
 from discord.ext import commands
 from pycord.multicog import add_to_group
 
 from homework_bot import api_operations, db_operations, responses
+
+cache = Cache(maxsize=1000, ttl=300)
 
 
 class HWInfo(commands.Cog):
@@ -24,20 +27,30 @@ class HWInfo(commands.Cog):
             )
             return
 
-        json_response, error = await api_operations.get_homework(
-            self.bot.http_client,
-            self.api_url,
-            db_query["ClassroomSecret"],
-            str(homework_id),
-        )
-
-        if error is not None:
-            await responses.normal_response(
-                ctx, f"**Something went wrong**\nError: `{error}`", color=Colour.red()
+        # check if the homework is in cache
+        if (db_query["ClassroomSecret"], str(homework_id)) in cache:
+            homework = cache.get((db_query["ClassroomSecret"], str(homework_id)))
+        else:
+            json_response, error = await api_operations.get_homework(
+                self.bot.http_client,
+                self.api_url,
+                db_query["ClassroomSecret"],
+                str(homework_id),
             )
-            return
 
-        homework = json_response["response"]["context"]
+            if error is not None:
+                await responses.normal_response(
+                    ctx,
+                    f"**Something went wrong**\nError: `{error}`",
+                    color=Colour.red(),
+                )
+                return
+
+            cache.set(
+                (db_query["ClassroomSecret"], str(homework_id)),
+                json_response["response"]["context"],
+            )
+            homework = json_response["response"]["context"]
 
         embed = Embed(
             title=f"#{homework['homework_id']} • {homework['subject']}",

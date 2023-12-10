@@ -10,4 +10,4 @@ COPY .python-version /app/
 
 RUN pip install --no-cache-dir .
 
-CMD ["python", "src/homework_bot/main.py"]
+CMD ["python", "-m", "homework_bot"]

@@ -9,6 +9,7 @@ from discord import ApplicationContext, Colour, DiscordException, Embed
 from discord.ext import commands
 from dotenv import load_dotenv
 from httpx import ConnectError
+from cacheout import Cache
 from pycord.multicog import apply_multicog
 
 from homework_bot import responses
@@ -23,7 +24,7 @@ from homework_bot.cogs import (
 )
 from homework_bot.utils import pretty_time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("homework_bot")
 
 load_dotenv()
 
@@ -42,12 +43,15 @@ main_bot = MainBot(
 @main_bot.event
 async def on_application_command_error(
     ctx: ApplicationContext, error: DiscordException
-):  
+):
     try:
         if isinstance(error, (commands.CheckFailure)):
+            if isinstance(error, (commands.MissingPermissions)):
+                return
+            
             logger.error(f"An error occurred: {error}")
             return
-        
+
         if isinstance(error.__cause__, (ConnectError)):
             logger.info("The API is down")
             await responses.normal_response(
@@ -72,7 +76,9 @@ async def on_application_command_error(
         pass
 
 
+@Cache(maxsize=1, ttl=60).memoize()
 async def measure_api_latency():
+    logger.info("Measuring API latency...")
     latency_list = []
 
     for _ in range(5):

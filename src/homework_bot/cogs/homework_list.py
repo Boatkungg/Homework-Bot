@@ -2,11 +2,14 @@ from dataclasses import dataclass
 from typing import Optional
 
 import discord
+from cacheout import Cache
 from discord import ApplicationContext, Colour, Embed, Interaction, ui
 from discord.ext import commands
 from pycord.multicog import add_to_group
 
 from homework_bot import api_operations, db_operations, responses
+
+cache = Cache(maxsize=1000, ttl=120)
 
 
 @dataclass
@@ -33,20 +36,12 @@ class HWListUI(ui.View):
         self.disable_all_items()
         await self.message.edit(view=self)
 
-    async def get_homeworks(self):
-        criteria = api_operations.listHomeworksCriteria(
-            count=6,
-            page=self.page,
-            assigned_before_date=self.criteria.assigned_before,
-            assigned_after_date=self.criteria.assigned_after,
-            due_before_date=self.criteria.due_before,
-            due_after_date=self.criteria.due_after,
-        )
-
+    @cache.memoize(ttl=120)
+    async def get_homeworks(self, secret, criteria):  # to make the cache work
         json_response, _ = await api_operations.list_homeworks(
             self.bot.http_client,
             self.api_url,
-            self.classroom_secret,
+            secret,
             criteria,
         )
 
@@ -63,7 +58,15 @@ class HWListUI(ui.View):
         return json_response_formatted, json_response["response"]["context"]["max_page"]
 
     async def create_embed(self):
-        homeworks, self.max_page = await self.get_homeworks()
+        homeworks, self.max_page = await self.get_homeworks(  # to make the cache work
+            self.classroom_secret,
+            api_operations.listHomeworksCriteria(
+                6,
+                self.page,
+                *self.criteria.__dict__.values(),
+            ),
+        )
+
         embed = Embed(
             title="Homework",
             timestamp=discord.utils.utcnow(),
@@ -212,17 +215,17 @@ class HWList(commands.Cog):
             return
 
         criteria = HWListCriteria()
-        if assigned_at is not None:
+        if not assigned_at:
             criteria.assigned_before = assigned_at
             criteria.assigned_after = assigned_at
-
-        elif due_at is not None:
-            criteria.due_before = due_at
-            criteria.due_after = due_at
-
         else:
             criteria.assigned_before = assigned_before
             criteria.assigned_after = assigned_after
+
+        if not due_at:
+            criteria.due_before = due_at
+            criteria.due_after = due_at
+        else:
             criteria.due_before = due_before
             criteria.due_after = due_after
 
