@@ -24,11 +24,11 @@ from homework_bot.cogs import (
 )
 from homework_bot.utils import pretty_time
 
-logger = logging.getLogger("homework_bot")
+logger = logging.getLogger("homework_bot.main")
 
 load_dotenv()
 
-API_URL = "http://localhost:5000"
+API_URL = os.getenv("API_URL")
 
 key = os.getenv("KEY").encode("utf8")
 
@@ -49,7 +49,7 @@ async def on_application_command_error(
             if isinstance(error, (commands.MissingPermissions)):
                 return
             
-            logger.error(f"An error occurred: {error}")
+            logger.error("An error occurred: %s", error)
             return
 
         if isinstance(error.__cause__, (ConnectError)):
@@ -61,11 +61,11 @@ async def on_application_command_error(
             )
             return
 
-        logger.error(f"An error occurred: {error}")
+        logger.error("An error occurred: %s", error)
         if error.__cause__ is None:
-            logger.error(str().join(traceback.format_tb(error.__traceback__)))
+            logger.error("%s", "".join(traceback.format_tb(error.__traceback__)))
         else:
-            logger.error(str().join(traceback.format_tb(error.__cause__.__traceback__)))
+            logger.error("%s", "".join(traceback.format_tb(error.__cause__.__traceback__)))
 
         await responses.normal_response(
             ctx,
@@ -92,7 +92,7 @@ async def measure_api_latency():
     return sum(latency_list) / len(latency_list)
 
 
-@main_bot.slash_command()
+@main_bot.slash_command(description="Get the latency of systems")
 async def ping(ctx: ApplicationContext):
     api_latency = await measure_api_latency()
 

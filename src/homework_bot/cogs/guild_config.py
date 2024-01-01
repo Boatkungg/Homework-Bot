@@ -1,6 +1,6 @@
 from cryptography.fernet import Fernet
 from discord import ApplicationContext
-from discord.commands import SlashCommandGroup, default_permissions
+from discord.commands import SlashCommandGroup
 from discord.ext import commands
 
 from homework_bot import db_operations, responses
@@ -15,17 +15,17 @@ class GuildConfig(commands.Cog):
 
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    @guild.command()
+    @guild.command(description="Set guild's classroom secret")
     async def secret(self, ctx: ApplicationContext, secret: str):
         await ctx.defer(ephemeral=True)
-        # check if the server is not already registered
+        # check if the guild is not already registered
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
 
         if db_query is None:
-            # add the server
+            # add the guild
             await db_operations.add_guild(self.bot.db, ctx.guild.id, secret)
         else:
-            # update the server
+            # update the guild
             await db_operations.update_guild(self.bot.db, ctx.guild.id, secret)
 
         await responses.normal_response(
@@ -33,7 +33,7 @@ class GuildConfig(commands.Cog):
         )
 
     @commands.guild_only()
-    @guild.command()
+    @guild.command(description="Set your classroom password")
     async def password(self, ctx: ApplicationContext, password: str):
         await ctx.defer(ephemeral=True)
         # check if the user is not already registered

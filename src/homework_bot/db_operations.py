@@ -1,3 +1,37 @@
+async def create_db(db):
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS guilds (
+        GuildID BIGINT PRIMARY KEY,
+        ClassroomSecret TEXT
+        )
+        """
+    )
+
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+        UserID BIGINT PRIMARY KEY,
+        GuildID BIGINT,
+        Password TEXT,
+        FOREIGN KEY (GuildID) REFERENCES guilds(GuildID)
+        )
+        """
+    )
+
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS notify (
+        UserID BIGINT PRIMARY KEY,
+        GuildID BIGINT,
+        Mode TEXT,
+        BeforeDue INTEGER,
+        FOREIGN KEY (GuildID) REFERENCES guilds(GuildID)
+        )
+        """
+    )
+
+
 async def get_guild(db, guild_id):
     db_query = await db.fetch_one(
         """

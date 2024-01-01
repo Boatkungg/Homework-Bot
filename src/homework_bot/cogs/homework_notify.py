@@ -50,7 +50,7 @@ async def get_homeworks(
     )
 
     if error is not None:
-        logger.error(f"An error occured when listing homeworks: {error}")
+        logger.error("An error occured when listing homeworks: %s", error)
         return None
 
     daily_homeworks = [
@@ -121,7 +121,7 @@ async def send_notifications(bot, users, embed):
         try:
             await user.send(embed=embed)
         except discord.Forbidden:
-            logging.error(f"Failed to send homeworks to {user_id}")
+            logging.error("Failed to send homeworks to %s", user_id)
 
 
 class HWNotify(commands.Cog):
@@ -132,7 +132,7 @@ class HWNotify(commands.Cog):
 
     notify = SlashCommandGroup("notify", "Commands for notify")
 
-    @notify.command()
+    @notify.command(description="Set notify mode")
     async def set(
         self,
         ctx: ApplicationContext,
@@ -162,7 +162,7 @@ class HWNotify(commands.Cog):
         )
 
     @commands.guild_only()
-    @notify.command()
+    @notify.command(description="Change notify setting")
     async def setting(self, ctx: ApplicationContext, before_due: int):
         await ctx.defer(ephemeral=True)
         db_query = await db_operations.get_notify(
@@ -187,7 +187,6 @@ class HWNotify(commands.Cog):
             color=self.bot.main_color,
         )
 
-    # TODO: add checking if the classroom is wrong
     @tasks.loop(time=datetime.time(hour=18, tzinfo=timezone))
     async def send_notify(self):
         """

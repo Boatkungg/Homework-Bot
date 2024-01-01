@@ -1,8 +1,10 @@
-FROM python:3.11.6-alpine as base
+FROM python:3.11.6-slim-bookworm as base
 
 FROM base as builder
 
-RUN apk add --no-cache build-base gcc
+RUN apt-get update
+
+RUN apt-get install -y --no-install-recommends gcc build-essential
 
 RUN python -m venv /opt/venv
 

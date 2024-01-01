@@ -194,7 +194,7 @@ class HWList(commands.Cog):
 
     @commands.guild_only()
     @add_to_group("homework")
-    @commands.slash_command()
+    @commands.slash_command(description="Get homework list")
     async def list(
         self,
         ctx: ApplicationContext,

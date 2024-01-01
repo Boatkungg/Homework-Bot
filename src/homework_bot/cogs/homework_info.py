@@ -16,7 +16,7 @@ class HWInfo(commands.Cog):
 
     @commands.guild_only()
     @add_to_group("homework")
-    @commands.slash_command()
+    @commands.slash_command(description="Get homework info")
     async def info(self, ctx: ApplicationContext, homework_id: int):
         await ctx.defer()
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)

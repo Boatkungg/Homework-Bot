@@ -1,13 +1,14 @@
 import calendar
 import datetime
 import io
+from typing import Optional
 
 import discord
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from cacheout import Cache
-from discord import (  # pylint: disable=no-name-in-module
+from discord import (   # pylint: disable=no-name-in-module
     ApplicationContext,
     Colour,
     Option,
@@ -23,8 +24,10 @@ sns.set_theme(style="darkgrid")
 
 
 @Cache(maxsize=50, ttl=300).memoize()
-def plot_statistic_calendar(stats: dict, subject: str):
-    first_day = datetime.date.today().replace(day=1)
+def plot_statistic_calendar(stats: dict, title: str, date: datetime.date = None):
+    date = datetime.date.today() if date is None else date
+
+    first_day = date.replace(day=1)
     calendar_labels = utils.calendar_label(first_day.year, first_day.month)
 
     calendar_offset = (first_day + offset).isocalendar()[1]
@@ -54,7 +57,7 @@ def plot_statistic_calendar(stats: dict, subject: str):
         yticklabels=False,
     )
 
-    ax.set_title(f"Statistic for {subject} in {first_day.strftime('%B %Y')}")
+    ax.set_title(title)
     ax.set(xlabel="", ylabel="")
     ax.xaxis.tick_top()
 
@@ -67,11 +70,11 @@ def plot_statistic_calendar(stats: dict, subject: str):
 
 
 @Cache(maxsize=50, ttl=300).memoize()
-def plot_statistic_graph(stats: dict, subject: str):
-    first_day = datetime.date.today().replace(day=1)
-    last_day = datetime.date.today().replace(
-        day=calendar.monthrange(first_day.year, first_day.month)[1]
-    )
+def plot_statistic_graph(stats: dict, title: str, date: datetime.date = None):
+    date = datetime.date.today() if date is None else date
+
+    first_day = date.replace(day=1)
+    last_day = date.replace(day=calendar.monthrange(first_day.year, first_day.month)[1])
 
     days = np.arange(first_day.day, last_day.day + 1)
     values = np.zeros(len(days))
@@ -83,7 +86,7 @@ def plot_statistic_graph(stats: dict, subject: str):
     fig, ax = plt.subplots(figsize=(7, 5))
 
     sns.lineplot(x=days, y=values, color="#ff7878", ax=ax)
-    ax.set_title(f"Statistic for {subject} in {first_day.strftime('%B %Y')}")
+    ax.set_title(title)
     ax.set(xlabel="Day", ylabel="Homeworks")
 
     buf = io.BytesIO()
@@ -100,12 +103,19 @@ class HWStatistic(commands.Cog):
         self.api_url = api_url
 
     @add_to_group("homework")
-    @commands.slash_command()
+    @commands.slash_command(description="Get homework statistic")
     async def statistic(
         self,
         ctx: ApplicationContext,
-        subject: str,
         style: Option(str, choices=["graph", "calendar"], default="calendar"),
+        month: Option(
+            int,
+            description="Month of the statistic",
+            choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+            default=datetime.date.today().month,
+        ),
+        year: Optional[int] = datetime.date.today().year,
+        subject: Optional[str] = None,
     ):
         await ctx.defer()
         db_query = await db_operations.get_guild(self.bot.db, ctx.guild.id)
@@ -116,8 +126,10 @@ class HWStatistic(commands.Cog):
             )
             return
 
-        first_day = datetime.date.today().replace(day=1)
-        last_day = datetime.date.today().replace(
+        stat_month = datetime.date.today().replace(day=1, month=month, year=year)
+
+        first_day = stat_month
+        last_day = stat_month.replace(
             day=calendar.monthrange(first_day.year, first_day.month)[1]
         )
 
@@ -141,14 +153,20 @@ class HWStatistic(commands.Cog):
         if len(stats) == 0:
             await responses.normal_response(
                 ctx,
-                f"**No statistic for this subject** `{subject}`",
+                f"**No statistic for this month** `{first_day.strftime('%B %Y')}`",
                 color=Colour.red(),
             )
             return
 
+        title = (
+            f"Statistic for {subject} in {first_day.strftime('%B %Y')}"
+            if subject is not None
+            else f"Statistic in {first_day.strftime('%B %Y')}"
+        )
+
         if style == "graph":
-            file = plot_statistic_graph(stats, subject)
+            file = plot_statistic_graph(stats, title, stat_month)
         else:
-            file = plot_statistic_calendar(stats, subject)
+            file = plot_statistic_calendar(stats, title, stat_month)
 
         await ctx.respond(file=file)
