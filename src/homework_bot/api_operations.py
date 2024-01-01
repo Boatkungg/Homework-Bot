@@ -29,6 +29,18 @@ class getStatisticsCriteria:
     assigned_after_date: Union[str, None] = None
 
 
+async def new_classroom(http_client, api_url, classroom_name: str, classroom_password: str):
+    json_query = {
+        "classroom_name": classroom_name,
+        "classroom_password": classroom_password,
+    }
+
+    api_response = await http_client.post(api_url + "/classroom/new", json=json_query)
+
+    json_response = api_response.json()
+    return json_response, json_response["response"]["error"]
+
+
 async def add_homework(
     http_client,
     api_url,

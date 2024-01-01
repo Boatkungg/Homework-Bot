@@ -66,3 +66,4 @@ class GuildConfig(commands.Cog):
                 "**You don't have permission to use this command**",
                 color=self.bot.main_color,
             )
+            return
