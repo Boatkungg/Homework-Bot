@@ -5,6 +5,7 @@ import re
 import time
 import traceback
 
+import discord
 import psutil
 from cacheout import Cache
 from discord import ApplicationContext, Colour, DiscordException, Embed
@@ -108,13 +109,15 @@ class UtilityAndMonitoring(commands.Cog):
         )
 
         # info
+        # pylint: disable=no-member
         info = f"""
         **Python version** `{platform.python_version()}`
+        **Discord version** `{discord.__version__}` 
         **OS** `{platform.system()}`
-        **CPU** `{platform.processor()}`
         **CPU count** `{psutil.cpu_count()}`
         **RAM** `{round(psutil.virtual_memory().total / (1024.0 **3))} GB`
         """
+        # pylint: enable=no-member
 
         # remove tabs at the start of each line
         info = re.sub(r"^\s+", "", info, flags=re.MULTILINE)

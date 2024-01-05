@@ -29,7 +29,6 @@ main_bot = MainBot(
     status=discord.Status.dnd,
     activity=discord.Game("with your homework"),
     intents=discord.Intents.default(),
-    debug_guilds=[856028294645153802],
 )
 
 # main bot
