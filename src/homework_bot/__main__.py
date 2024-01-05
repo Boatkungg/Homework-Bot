@@ -7,6 +7,7 @@ from pycord.multicog import apply_multicog
 
 from homework_bot.bot import MainBot
 from homework_bot.main_bot.cogs import (
+    CRManagement,
     GuildConfig,
     HWInfo,
     HWList,
@@ -39,6 +40,8 @@ main_bot.add_cog(HWInfo(main_bot, API_URL))
 main_bot.add_cog(HWNotify(main_bot, API_URL))
 main_bot.add_cog(HWStatistic(main_bot, API_URL))
 main_bot.add_cog(HWManagement(main_bot, key, API_URL))
+main_bot.add_cog(CRManagement(main_bot, API_URL))
+
 
 apply_multicog(main_bot)
 

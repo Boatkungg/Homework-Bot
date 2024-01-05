@@ -5,7 +5,7 @@ from discord.ext import commands
 from homework_bot import api_operations, responses
 
 
-class U_CRManagement(commands.Cog):
+class CRManagement(commands.Cog):
     def __init__(self, bot, api_url):
         self.bot = bot
         self.api_url = api_url
@@ -43,4 +43,3 @@ class U_CRManagement(commands.Cog):
                 color=Colour.red(),
             )
             return
-            

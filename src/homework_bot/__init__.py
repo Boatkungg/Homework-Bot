@@ -3,7 +3,6 @@ import logging
 from .api_operations import *
 from .bot import *
 from .main_bot import *
-from .utility_bot import *
 from .db_operations import *
 from .responses import *
 from .utils import *
